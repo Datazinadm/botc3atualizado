@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>C3 NUCLEAR - Control Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root { --bg: #020617; --surface: rgba(15, 23, 42, 0.75); --border: rgba(59, 130, 246, 0.2); --primary: #3b82f6; --primary-light: #60a5fa; --glow: rgba(59, 130, 246, 0.4); --text: #f1f5f9; --muted: #64748b; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+body { background: var(--bg); background-image: radial-gradient(ellipse at top left, rgba(59, 130, 246, 0.12) 0%, transparent 50%), radial-gradient(ellipse at bottom right, rgba(59, 130, 246, 0.1) 0%, transparent 50%); color: var(--text); min-height: 100vh; padding-bottom: 80px; -webkit-font-smoothing: antialiased; }
+.header { position: sticky; top: 0; z-index: 100; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(24px); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-logo { width: 44px; height: 44px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 18px; font-weight: 900; color: #fff; box-shadow: 0 0 25px var(--glow); }
+.brand-text h1 { font-size: 18px; font-weight: 900; letter-spacing: 1px; }
+.brand-text h1 span { background: linear-gradient(135deg, #60a5fa, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.brand-text p { font-size: 9px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; font-weight: 600; }
+.menu-btn { width: 44px; height: 44px; background: rgba(59, 130, 246, 0.1); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s; }
+.menu-btn:hover { background: rgba(59, 130, 246, 0.2); }
+.menu-btn span { width: 20px; height: 2px; background: var(--primary-light); border-radius: 2px; transition: 0.3s; }
+.menu-btn.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.menu-btn.active span:nth-child(2) { opacity: 0; }
+.menu-btn.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+.menu-panel { position: fixed; top: 0; right: -320px; width: 300px; height: 100vh; background: rgba(2, 6, 23, 0.98); backdrop-filter: blur(24px); border-left: 1px solid var(--border); z-index: 200; padding: 90px 24px 24px; transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto; }
+.menu-panel.open { right: 0; }
+.menu-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; }
+.stat-box { background: rgba(59, 130, 246, 0.08); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 12px; }
+.stat-box .k { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; font-weight: 700; }
+.stat-box .v { font-size: 32px; font-weight: 900; color: var(--primary-light); font-family: 'JetBrains Mono', monospace; }
+.menu-divider { height: 1px; background: var(--border); margin: 20px 0; }
+.menu-info { font-size: 11px; color: var(--muted); line-height: 1.6; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 10px; }
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 150; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+.overlay.open { opacity: 1; pointer-events: all; }
+.container { max-width: 820px; margin: 24px auto; padding: 0 20px; }
+.card { background: var(--surface); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 22px; padding: 24px; margin-bottom: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+.card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--primary), transparent); opacity: 0.6; }
+.card-title { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.card-title h2 { font-size: 14px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
+.card-title-bar { width: 4px; height: 18px; background: linear-gradient(180deg, #3b82f6, #1d4ed8); border-radius: 2px; box-shadow: 0 0 12px var(--glow); }
+.field { margin-bottom: 20px; }
+.field label { display: block; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 9px; }
+.input-wrap { position: relative; }
+.input-wrap input, .input-wrap select { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); color: #fff; padding: 15px 18px; border-radius: 12px; font-size: 15px; outline: none; transition: all 0.25s; font-weight: 500; }
+.input-wrap input:focus, .input-wrap select:focus { border-color: var(--primary); background: rgba(0,0,0,0.7); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); }
+.input-wrap input::placeholder { color: rgba(100, 116, 139, 0.6); }
+.input-wrap select { appearance: none; cursor: pointer; }
+.input-wrap .arrow { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 12px; pointer-events: none; }
+.metodo-desc { margin-top: 10px; padding: 12px 14px; background: rgba(59, 130, 246, 0.08); border-left: 3px solid var(--primary); border-radius: 0 10px 10px 0; font-size: 12px; color: #94a3b8; line-height: 1.5; display: none; animation: slideDown 0.3s ease; }
+.metodo-desc.show { display: block; }
+.metodo-desc strong { color: var(--primary-light); }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+.slider-wrap { display: flex; align-items: center; gap: 16px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px; }
+.slider-wrap input[type=range] { flex: 1; -webkit-appearance: none; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; outline: none; cursor: pointer; }
+.slider-wrap input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: 3px solid #020617; border-radius: 50%; cursor: pointer; box-shadow: 0 0 20px var(--glow); transition: transform 0.15s; }
+.slider-wrap input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+.slider-value { background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(29,78,216,0.2)); color: #60a5fa; padding: 8px 16px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 18px; min-width: 65px; text-align: center; border: 1px solid rgba(59, 130, 246, 0.35); }
+.btn-main { width: 100%; padding: 18px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 40px var(--glow); position: relative; overflow: hidden; }
+.btn-main::after { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); transition: left 0.6s; }
+.btn-main:hover::after { left: 100%; }
+.btn-main:hover { transform: translateY(-2px); }
+.btn-main:disabled { background: linear-gradient(135deg, #1e3a8a, #172554); cursor: not-allowed; transform: none; opacity: 0.6; }
+.msg { padding: 14px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-top: 16px; display: none; text-align: center; }
+.msg.show { display: block; animation: fadeIn 0.3s ease; }
+.msg-err { background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; }
+.msg-ok { background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); color: #6ee7b7; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+.ataque-item { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px; margin-bottom: 14px; transition: all 0.3s; animation: fadeIn 0.4s ease; }
+.ataque-item:hover { border-color: rgba(59, 130, 246, 0.4); }
+.ataque-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 10px; }
+.ataque-alvo { font-size: 14px; font-weight: 800; color: #fff; word-break: break-all; line-height: 1.4; flex: 1; }
+.ataque-id { font-size: 10px; color: var(--primary-light); background: rgba(59,130,246,0.15); padding: 5px 10px; border-radius: 7px; font-family: 'JetBrains Mono', monospace; border: 1px solid rgba(59,130,246,0.3); font-weight: 700; white-space: nowrap; }
+.status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
+.status-online { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+.status-lento { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.status-offline { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+.status-unknown { background: rgba(100, 116, 139, 0.15); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.3); }
+.status-dot-badge { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.3); } }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+@media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+.stat { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); text-align: center; }
+.stat .k { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; font-weight: 700; }
+.stat .v { font-size: 13px; font-weight: 800; color: #fff; }
+.progress-wrap { margin-bottom: 16px; }
+.progress-bar { height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); width: 0%; transition: width 1s linear; box-shadow: 0 0 12px var(--glow); border-radius: 4px; }
+.progress-text { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 8px; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+.btn-abortar { width: 100%; padding: 12px; background: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; }
+.btn-abortar:hover { background: rgba(239, 68, 68, 0.2); color: #fff; }
+.vazio { text-align: center; padding: 50px 20px; color: var(--muted); font-size: 14px; font-weight: 500; }
+.vazio::before { content: '○'; display: block; font-size: 42px; margin-bottom: 14px; opacity: 0.2; color: var(--primary); }
+</style>
+</head>
+<body>
+<div class="header">
+    <div class="brand">
+        <div class="brand-logo">C3</div>
+        <div class="brand-text">
+            <h1>C3 <span>NUCLEAR</span></h1>
+            <p>Advanced Control Panel</p>
+        </div>
+    </div>
+    <div class="menu-btn" id="menuBtn" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+    </div>
+</div>
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+<div class="menu-panel" id="menuPanel">
+    <div class="menu-title">Minhas Estatísticas</div>
+    <div class="stat-box">
+        <div class="k">Ataques Realizados</div>
+        <div class="v" id="statAtaques">0</div>
+    </div>
+    <div class="stat-box">
+        <div class="k">Quedas Bem-Sucedidas</div>
+        <div class="v" id="statQuedas" style="color: #34d399;">0</div>
+    </div>
+    <div class="menu-divider"></div>
+    <div class="menu-info">Estatísticas salvas localmente no seu dispositivo. Cada navegador tem seu próprio histórico.</div>
+    <div class="menu-divider"></div>
+    <button class="btn-abortar" onclick="resetarStats()" style="margin-top: 8px;">Resetar Minhas Estatísticas</button>
+</div>
+<div class="container">
+    <div class="card">
+        <div class="card-title"><div class="card-title-bar"></div><h2>Iniciar Ofensiva</h2></div>
+        <form id="formAtaque">
+            <div class="field">
+                <label>Alvo (URL ou Domínio)</label>
+                <div class="input-wrap"><input type="text" id="alvo" placeholder="exemplo.com ou https://exemplo.com" required autocomplete="off"></div>
+            </div>
+            <div class="field">
+                <label>Duração (segundos)</label>
+                <div class="input-wrap"><input type="number" id="time" placeholder="120" min="1" required></div>
+            </div>
+            <div class="field">
+                <label>Método de Ataque</label>
+                <div class="input-wrap">
+                    <select id="metado" required><option value="">Carregando...</option></select>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="metodo-desc" id="metodoDesc"></div>
+            </div>
+            <div class="field">
+                <label>Threads (1 a 10)</label>
+                <div class="slider-wrap">
+                    <input type="range" id="threads" min="1" max="10" value="1">
+                    <div class="slider-value" id="threadsVal">1</div>
+                </div>
+            </div>
+            <button type="submit" class="btn-main" id="btnIniciar">Iniciar Ataque</button>
+            <div class="msg" id="msgForm"></div>
+        </form>
+    </div>
+    <div class="card">
+        <div class="card-title"><div class="card-title-bar"></div><h2>Ataques em Andamento</h2></div>
+        <div id="ataquesLista"><div class="vazio" id="vazioMsg">Nenhum ataque ativo</div></div>
+    </div>
+</div>
+<script>
+const DESCRICOES = {
+    'KILL': 'Ataque multi-camada que sobrecarrega todos os recursos do servidor simultaneamente.',
+    'GPZ-AR': 'Requisições HTTP GET/POST massivas explorando vulnerabilidades de camada 7.',
+    'WX': 'Flood UDP/TCP bruto na camada 4, saturando toda a largura de banda disponível.',
+    'TLS': 'Sobrecarga no handshake SSL/TLS, forçando reinicialização constante de conexões.',
+    'TLS1': 'Handshake alternativo mais agressivo com técnicas de bypass de mitigação.',
+    'HTTP': 'Flood HTTP puro com altíssima taxa de requisições HEAD/GET por segundo.',
+    'FLOODER': 'Flood genérico de pacotes com taxa elevada de RPS, saturando a rede.',
+    'C3': 'Híbrido que combina conexões persistentes com requisições leves e contínuas.',
+    'CLOUD': 'Bypass de proteções Cloudflare usando User-Agents e IPs rotativos.',
+    'TEK': 'Ataque especializado com padrões de pacotes otimizados para evasão.',
+    'H2-MONARCH': 'Exploração de HTTP/2 com multiplexação massiva de streams.'
+};
+['c3_ataques_v2', 'c3_ataques_v3', 'c3_ataques_v9', 'c3_ataques_v10', 'c3_ataques_v11', 'c3_ataques_v12', 'c3_painel_v12', 'c3_ataques_v13', 'c3_ataques_v14'].forEach(k => localStorage.removeItem(k));
+const STORAGE_KEY = 'c3_ataques_final2';
+const STATS_KEY = 'c3_stats_final2';
+let ataques = {};
+let stats = { ataques: 0, quedas: 0 };
+
+function toggleMenu() {
+    document.getElementById('menuBtn').classList.toggle('active');
+    document.getElementById('menuPanel').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('open');
+}
+function resetarStats() {
+    if (!confirm('Resetar suas estatísticas?')) return;
+    stats = { ataques: 0, quedas: 0 };
+    salvarStats();
+    toggleMenu();
+}
+function carregarStats() {
+    try { const s = localStorage.getItem(STATS_KEY); if (s) stats = JSON.parse(s); } catch(e) {}
+    atualizarStatsVisuais();
+}
+function salvarStats() {
+    localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+    atualizarStatsVisuais();
+}
+function atualizarStatsVisuais() {
+    document.getElementById('statAtaques').textContent = stats.ataques;
+    document.getElementById('statQuedas').textContent = stats.quedas;
+}
+
+const slider = document.getElementById('threads');
+const sliderVal = document.getElementById('threadsVal');
+function updateSlider() {
+    sliderVal.textContent = slider.value;
+    const pct = ((slider.value - 1) / 9) * 100;
+    slider.style.background = 'linear-gradient(90deg, #3b82f6 ' + pct + '%, rgba(255,255,255,0.1) ' + pct + '%)';
+}
+slider.addEventListener('input', updateSlider);
+
+async function carregarMetados() {
+    const sel = document.getElementById('metado');
+    try {
+        const r = await fetch('/api/metados');
+        const j = await r.json();
+        sel.innerHTML = '<option value="">Selecione...</option>';
+        if (j.metados && j.metados.length > 0) {
+            j.metados.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m; opt.textContent = m;
+                sel.appendChild(opt);
+            });
+        } else { sel.innerHTML = '<option value="">Sem métodos</option>'; }
+    } catch(e) { sel.innerHTML = '<option value="">Erro ao carregar</option>'; }
+}
+
+document.getElementById('metado').addEventListener('change', function() {
+    const d = document.getElementById('metodoDesc');
+    if (this.value && DESCRICOES[this.value]) {
+        d.innerHTML = '<strong>' + this.value + '</strong> — ' + DESCRICOES[this.value];
+        d.classList.add('show');
+    } else { d.classList.remove('show'); }
+});
+
+function mostrarMsg(tipo, texto) {
+    const m = document.getElementById('msgForm');
+    m.className = 'msg show ' + (tipo === 'ok' ? 'msg-ok' : 'msg-err');
+    m.textContent = texto;
+    if (tipo === 'ok') setTimeout(() => m.classList.remove('show'), 5000);
+}
+
+document.getElementById('formAtaque').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const alvo = document.getElementById('alvo').value.trim();
+    const time = document.getElementById('time').value.trim();
+    const threads = slider.value;
+    const metado = document.getElementById('metado').value;
+    if (!alvo || !time || !metado) { mostrarMsg('err', 'Preencha todos os campos.'); return; }
+    if (Object.keys(ataques).length > 0) { mostrarMsg('err', 'Você já tem uma inundação ativa. Aguarde...'); return; }
+    const btn = document.getElementById('btnIniciar');
+    btn.disabled = true; btn.textContent = 'INICIANDO...';
+    try {
+        const r = await fetch('/api/iniciar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ alvo, time: parseInt(time), threads: parseInt(threads), metado })
+        });
+        const j = await r.json();
+        if (j.status === true && j.id) {
+            mostrarMsg('ok', 'Ataque iniciado com sucesso!');
+            let alvoVisual = alvo;
+            if (!alvoVisual.startsWith('http://') && !alvoVisual.startsWith('https://')) alvoVisual = 'https://' + alvoVisual;
+            ataques[j.id] = { id: j.id, alvo: alvoVisual, time: parseInt(time), threads: parseInt(threads), metado: metado, startTime: Date.now(), lastStatus: 'unknown', lastCheck: 0, wasOffline: false };
+            stats.ataques++; salvarStats(); salvarAtaques(); renderizar();
+        } else { mostrarMsg('err', j.error || 'Erro na API'); }
+    } catch(err) { mostrarMsg('err', 'Erro de conexão'); } 
+    finally { btn.disabled = false; btn.textContent = 'Iniciar Ataque'; }
+});
+
+function salvarAtaques() { localStorage.setItem(STORAGE_KEY, JSON.stringify(ataques)); }
+function carregarSalvos() {
+    try {
+        const s = localStorage.getItem(STORAGE_KEY);
+        if (s) {
+            const obj = JSON.parse(s);
+            const agora = Date.now();
+            for (const id in obj) { if ((agora - obj[id].startTime) / 1000 < obj[id].time) ataques[id] = obj[id]; }
+        }
+    } catch(e) {}
+}
+
+function renderizar() {
+    const lista = document.getElementById('ataquesLista');
+    const ids = Object.keys(ataques);
+    if (ids.length === 0) { lista.innerHTML = '<div class="vazio" id="vazioMsg">Nenhum ataque ativo</div>'; return; }
+    if (document.getElementById('vazioMsg')) document.getElementById('vazioMsg').remove();
+    ids.forEach(id => {
+        if (document.querySelector('.ataque-item[data-id="' + id + '"]')) return;
+        const a = ataques[id];
+        const el = document.createElement('div');
+        el.className = 'ataque-item'; el.dataset.id = id;
+        el.innerHTML = '<div class="ataque-top"><div class="ataque-alvo">' + esc(a.alvo) + '</div><div class="ataque-id">ID: ' + id + '</div></div>' +
+            '<div class="status-badge status-unknown" data-status-badge><div class="status-dot-badge"></div><span data-status-text>Verificando...</span></div>' +
+            '<div class="stats-grid">' +
+            '<div class="stat"><div class="k">Método</div><div class="v">' + esc(a.metado) + '</div></div>' +
+            '<div class="stat"><div class="k">Duração</div><div class="v">' + a.time + 's</div></div>' +
+            '<div class="stat"><div class="k">Threads</div><div class="v">' + a.threads + '</div></div>' +
+            '<div class="stat"><div class="k">Restam</div><div class="v" data-restam>' + a.time + 's</div></div>' +
+            '</div>' +
+            '<div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div><div class="progress-text"><span data-restam-txt>Restam: ' + a.time + 's</span><span data-pct>0%</span></div></div>' +
+            '<button class="btn-abortar" onclick="abortar(\'' + id + '\')">Abortar Ataque</button>';
+        lista.appendChild(el);
+    });
+}
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+async function verificarStatus(alvo) {
+    try { const r = await fetch('/api/status?alvo=' + encodeURIComponent(alvo)); const j = await r.json(); return j; } 
+    catch(e) { return { status: 'unknown' }; }
+}
+
+setInterval(async () => {
+    const agora = Date.now();
+    const items = document.querySelectorAll('.ataque-item');
+    for (const el of items) {
+        const id = el.dataset.id; const a = ataques[id];
+        if (!a) { el.remove(); continue; }
+        const decorrido = Math.floor((agora - a.startTime) / 1000);
+        const restante = a.time - decorrido;
+        const pct = Math.min(100, Math.max(0, (decorrido / a.time) * 100));
+        const fill = el.querySelector('.progress-fill');
+        if (fill) fill.style.width = pct.toFixed(1) + '%';
+        const pctTxt = el.querySelector('[data-pct]');
+        if (pctTxt) pctTxt.textContent = pct.toFixed(0) + '%';
+        const restamTxt = el.querySelector('[data-restam]');
+        if (restamTxt) restamTxt.textContent = restante <= 0 ? '0s' : restante + 's';
+        const restamTxt2 = el.querySelector('[data-restam-txt]');
+        if (restamTxt2) restamTxt2.textContent = restante <= 0 ? 'Finalizando...' : 'Restam: ' + restante + 's';
+        if (!a.lastCheck || (agora - a.lastCheck) >= 1000) {
+            a.lastCheck = agora;
+            verificarStatus(a.alvo).then(st => {
+                const badge = el.querySelector('[data-status-badge]');
+                const text = el.querySelector('[data-status-text]');
+                if (!badge || !text) return;
+                badge.className = 'status-badge';
+                if (st.status === 'online') { badge.classList.add('status-online'); text.textContent = 'ONLINE'; }
+                else if (st.status === 'lento') { badge.classList.add('status-lento'); text.textContent = 'LENTO'; }
+                else if (st.status === 'offline') {
+                    badge.classList.add('status-offline'); text.textContent = 'OFFLINE';
+                    if (!a.wasOffline) { a.wasOffline = true; stats.quedas++; salvarStats(); }
+                } else { badge.classList.add('status-unknown'); text.textContent = 'VERIFICANDO'; }
+                a.lastStatus = st.status;
+            });
+        }
+        if (restante <= 0) { delete ataques[id]; salvarAtaques(); el.remove(); }
+    }
+    if (Object.keys(ataques).length === 0 && !document.getElementById('vazioMsg')) {
+        document.getElementById('ataquesLista').innerHTML = '<div class="vazio" id="vazioMsg">Nenhum ataque ativo</div>';
+    }
+}, 1000);
+
+async function abortar(id) {
+    if (!confirm('Abortar o ataque ' + id + '?')) return;
+    try {
+        await fetch('/api/stop', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+        delete ataques[id]; salvarAtaques();
+        const el = document.querySelector('.ataque-item[data-id="' + id + '"]');
+        if (el) el.remove();
+    } catch(e) { alert('Erro de conexão'); }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateSlider(); carregarMetados(); carregarSalvos(); carregarStats(); renderizar();
+});
+</script>
+</body>
+</html>
