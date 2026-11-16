@@ -1,0 +1,16 @@
+name: VPS SSHX
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+jobs:
+  sshx:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+    steps:
+      - name: Iniciando SSHX
+        run: |
+          curl -sSf https://sshx.io/get | sh -s run
