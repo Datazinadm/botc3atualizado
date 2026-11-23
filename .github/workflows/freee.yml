@@ -1,0 +1,30 @@
+name: Debug com Upterm
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # Permite rodar manualmente pela aba "Actions"
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v6 # Versão atualizada para remover o aviso do Node 20
+
+      - name: Simular passo que pode falhar (opcional)
+        run: |
+          echo "Simulando ambiente..."
+          # Descomente a linha abaixo para forçar a falha e testar o Upterm
+          # exit 1
+          echo "Ambiente pronto."
+
+      - name: Iniciar sessão Upterm
+        if: ${{ failure() }} # Só inicia se um passo anterior falhar
+        uses: owenthereal/action-upterm@v2 # Versão estável e recomendada
+        with:
+          ## Limita o acesso apenas a quem disparou o workflow (mais seguro)
+          limit-access-to-actor: true
+          ## Encerra a sessão se ninguém conectar em 10 minutos
+          wait-timeout-minutes: 10
