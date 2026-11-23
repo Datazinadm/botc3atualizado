@@ -1,0 +1,34 @@
+name: Debug com Upterm
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Permite rodar manualmente pela aba "Actions"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar ambiente (exemplo)
+        run: |
+          echo "Simulando um passo que pode falhar..."
+          # Descomente a linha abaixo para forçar uma falha e testar o Upterm
+          # exit 1
+          echo "Ambiente configurado com sucesso."
+
+      - name: Iniciar sessão Upterm (apenas se falhar)
+        if: ${{ failure() }}
+        uses: owenthereal/action-upterm@v1
+        with:
+          ## Limita o acesso apenas a quem disparou o workflow (mais seguro)
+          limit-access-to-actor: true
+          ## Encerra a sessão automaticamente se ninguém conectar em 10 min
+          wait-timeout-minutes: 10
+          ## (Opcional) Permite que outros usuários específicos do GitHub se conectem
+          # limit-access-to-users: usuario1,usuario2
